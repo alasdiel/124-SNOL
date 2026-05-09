@@ -100,6 +100,10 @@ while True:
         exit()
     
     if split_command[0] == "BEG": # input variable on cli
+        if len(split_command) < 2 or not split_command[1]:
+            snol_print("Error: BEG requires a variable name")
+            print("\n")
+            continue
         snol_print(f"Please enter value for [{split_command[1]}]")
         print("Input: ", end="")
         beg_var = input()
@@ -108,8 +112,14 @@ while True:
         else:
             value, _ = parse_token(beg_var, snol_vars)
             snol_vars[split_command[1]] = value
+        print("\n")
+        continue
     
     if split_command[0] == "PRINT": # print variable 
+        if len(split_command) < 2 or not split_command[1]:
+            snol_print("Error: PRINT requires a value or variable")
+            print("\n")
+            continue
         if len(split_command) >= 3:
             result, error = evaluate_chain(split_command[1:], snol_vars)
             if error:
@@ -124,6 +134,8 @@ while True:
             snol_print(f"Error! [{split_command[1]}] is not defined!")
         else:
             snol_print(split_command[1]) # print literal
+        print("\n")
+        continue
 
     ops = {"+", "-", "*", "/", "%"}
     if split_command[0] in ops:
@@ -160,6 +172,12 @@ while True:
                     continue
 
                 snol_vars[split_command[0]] = result
+            print("\n")
+            continue
+        else:
+            snol_print("Unknown command! Does not match any valid command of the language.")
+            print("\n")
+            continue
     
     
     if split_command[0] not in {"BEG", "PRINT", "EXIT!"} and not (len(split_command) >= 3 and split_command[1] in ops):
