@@ -1,3 +1,5 @@
+import re
+
 print("The SNOL environment is now active, you may proceed with giving your commands.")
 
 command_var = "Command: "
@@ -7,34 +9,39 @@ snol_vars = {}
 reserved_keywords = {"BEG", "PRINT", "EXIT!"}
 
 def snol_print(message):
+    """Print a SNOL-prefixed message."""
     print(f"SNOL> {message}")
 
 def is_valid_var_name(name):
+    """Validate SNOL variable names (alpha-starting, identifier-safe, not reserved)."""
     if name in reserved_keywords:
         return False
     if not name:
         return False
-    if name[0].isdigit():
+    if not name[0].isalpha():
         return False
     return name.isidentifier()
 
 def is_identifier_token(token):
+    """Return True if token is a non-reserved identifier."""
     return token.isidentifier() and token not in reserved_keywords
 
 def parse_token(token, variables, require_defined=False):
+    """Parse a token into a value, enforcing SNOL number formats."""
     if token in variables:
         return variables[token], None
     if require_defined and is_identifier_token(token):
         return None, f"Error! [{token}] is not defined!"
-    try:
+    if re.match(r"^\d+$", token):
         return int(token), None
-    except ValueError:
-        try:
-            return float(token), None
-        except ValueError:
-            return token, None
+    if re.match(r"^\d+\.\d+$", token):
+        return float(token), None
+    if any(ch.isdigit() or ch == "." for ch in token):
+        return None, "Error: invalid number format"
+    return token, None
 
 def apply_arithmetic(left_val, op, right_val):
+    """Apply arithmetic to two numeric values."""
     if not isinstance(left_val, (int, float)) or not isinstance(right_val, (int, float)):
         return None, "Error: arithmetic requires numbers"
 
@@ -61,6 +68,7 @@ def apply_arithmetic(left_val, op, right_val):
     return None, "Error: unknown operator"
 
 def evaluate_chain(tokens, variables):
+    """Evaluate a left-to-right arithmetic chain."""
     if len(tokens) < 3 or len(tokens) % 2 == 0:
         return None, "Error: invalid arithmetic expression"
 
