@@ -1,4 +1,5 @@
 import re
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 print("The SNOL environment is now active, you may proceed with giving your commands.")
 
@@ -8,11 +9,11 @@ snol_vars = {}
 
 reserved_keywords = {"BEG", "PRINT", "EXIT!"}
 
-def snol_print(message):
+def snol_print(message: Any) -> None:
     """Print a SNOL-prefixed message."""
     print(f"SNOL> {message}")
 
-def is_valid_var_name(name):
+def is_valid_var_name(name: str) -> bool:
     """Validate SNOL variable names (alpha-starting, identifier-safe, not reserved)."""
     if name in reserved_keywords:
         return False
@@ -22,11 +23,15 @@ def is_valid_var_name(name):
         return False
     return name.isidentifier()
 
-def is_identifier_token(token):
+def is_identifier_token(token: str) -> bool:
     """Return True if token is a non-reserved identifier."""
     return token.isidentifier() and token not in reserved_keywords
 
-def parse_token(token, variables, require_defined=False):
+def parse_token(
+    token: str,
+    variables: Dict[str, Any],
+    require_defined: bool = False,
+) -> Tuple[Optional[Any], Optional[str]]:
     """Parse a token into a value, enforcing SNOL number formats."""
     if token in variables:
         return variables[token], None
@@ -40,7 +45,11 @@ def parse_token(token, variables, require_defined=False):
         return None, "Error: invalid number format"
     return token, None
 
-def apply_arithmetic(left_val, op, right_val):
+def apply_arithmetic(
+    left_val: Any,
+    op: str,
+    right_val: Any,
+) -> Tuple[Optional[Any], Optional[str]]:
     """Apply arithmetic to two numeric values."""
     if not isinstance(left_val, (int, float)) or not isinstance(right_val, (int, float)):
         return None, "Error: arithmetic requires numbers"
@@ -67,7 +76,10 @@ def apply_arithmetic(left_val, op, right_val):
 
     return None, "Error: unknown operator"
 
-def evaluate_chain(tokens, variables):
+def evaluate_chain(
+    tokens: Sequence[str],
+    variables: Dict[str, Any],
+) -> Tuple[Optional[Any], Optional[str]]:
     """Evaluate a left-to-right arithmetic chain."""
     if len(tokens) < 3 or len(tokens) % 2 == 0:
         return None, "Error: invalid arithmetic expression"
