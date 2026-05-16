@@ -9,9 +9,11 @@ snol_vars = {}
 
 reserved_keywords = {"BEG", "PRINT", "EXIT!"}
 
+
 def snol_print(message: Any) -> None:
     """Print a SNOL-prefixed message."""
     print(f"SNOL> {message}")
+
 
 def is_valid_var_name(name: str) -> bool:
     """Validate SNOL variable names (alpha-starting, identifier-safe, not reserved)."""
@@ -23,14 +25,16 @@ def is_valid_var_name(name: str) -> bool:
         return False
     return name.isidentifier()
 
+
 def is_identifier_token(token: str) -> bool:
     """Return True if token is a non-reserved identifier."""
     return token.isidentifier() and token not in reserved_keywords
 
+
 def parse_token(
-    token: str,
-    variables: Dict[str, Any],
-    require_defined: bool = False,
+        token: str,
+        variables: Dict[str, Any],
+        require_defined: bool = False,
 ) -> Tuple[Optional[Any], Optional[str]]:
     """Parse a token into a value, enforcing SNOL number formats."""
     if token in variables:
@@ -45,10 +49,11 @@ def parse_token(
         return None, "Error: invalid number format"
     return token, None
 
+
 def apply_arithmetic(
-    left_val: Any,
-    op: str,
-    right_val: Any,
+        left_val: Any,
+        op: str,
+        right_val: Any,
 ) -> Tuple[Optional[Any], Optional[str]]:
     """Apply arithmetic to two numeric values."""
     if not isinstance(left_val, (int, float)) or not isinstance(right_val, (int, float)):
@@ -66,7 +71,10 @@ def apply_arithmetic(
     if op == "/":
         if right_val == 0:
             return None, "Error: division by zero"
-        return left_val / right_val, None
+        if isinstance(left_val, int) and isinstance(right_val, int):
+            return left_val // right_val, None
+        else:
+            return left_val / right_val, None
     if op == "%":
         if not isinstance(left_val, int) or not isinstance(right_val, int):
             return None, "Error: modulo requires integers"
@@ -76,9 +84,10 @@ def apply_arithmetic(
 
     return None, "Error: unknown operator"
 
+
 def evaluate_chain(
-    tokens: Sequence[str],
-    variables: Dict[str, Any],
+        tokens: Sequence[str],
+        variables: Dict[str, Any],
 ) -> Tuple[Optional[Any], Optional[str]]:
     """Evaluate an arithmetic chain with operator precedence (no parentheses)."""
     if len(tokens) < 3 or len(tokens) % 2 == 0:
@@ -123,6 +132,7 @@ def evaluate_chain(
 
     return current, None
 
+
 while True:
     command_var = "Command: "
     command_var = input(command_var)
@@ -133,11 +143,11 @@ while True:
         print("\n")
         continue
 
-    if split_command[0] == "EXIT!": # exit
+    if split_command[0] == "EXIT!":  # exit
         print("Interpreter is now terminated...")
         exit()
-    
-    if split_command[0] == "BEG": # input variable on cli
+
+    if split_command[0] == "BEG":  # input variable on cli
         if len(split_command) < 2 or not split_command[1]:
             snol_print("Error: BEG requires a variable name")
             print("\n")
@@ -152,8 +162,8 @@ while True:
             snol_vars[split_command[1]] = value
         print("\n")
         continue
-    
-    if split_command[0] == "PRINT": # print variable 
+
+    if split_command[0] == "PRINT":  # print variable
         if len(split_command) < 2 or not split_command[1]:
             snol_print("Error: PRINT requires a value or variable")
             print("\n")
@@ -171,7 +181,7 @@ while True:
         elif is_identifier_token(split_command[1]):
             snol_print(f"Error! [{split_command[1]}] is not defined!")
         else:
-            snol_print(split_command[1]) # print literal
+            snol_print(split_command[1])  # print literal
         print("\n")
         continue
 
@@ -187,7 +197,7 @@ while True:
             print("\n")
         continue
 
-    if split_command[0] in snol_vars or is_valid_var_name(split_command[0]): # variable assignment/overwrite
+    if split_command[0] in snol_vars or is_valid_var_name(split_command[0]):  # variable assignment/overwrite
         if len(split_command) >= 3 and split_command[1] == "=":
             if not is_valid_var_name(split_command[0]):
                 snol_print("Error: invalid variable name")
@@ -216,8 +226,7 @@ while True:
             snol_print("Unknown command! Does not match any valid command of the language.")
             print("\n")
             continue
-    
-    
+
     if split_command[0] not in {"BEG", "PRINT", "EXIT!"} and not (len(split_command) >= 3 and split_command[1] in ops):
         if not (split_command[0] in snol_vars or is_valid_var_name(split_command[0])):
             snol_print("Unknown command! Does not match any valid command of the language.")
