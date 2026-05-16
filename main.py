@@ -80,7 +80,7 @@ def evaluate_chain(
     tokens: Sequence[str],
     variables: Dict[str, Any],
 ) -> Tuple[Optional[Any], Optional[str]]:
-    """Evaluate a left-to-right arithmetic chain."""
+    """Evaluate an arithmetic chain with operator precedence (no parentheses)."""
     if len(tokens) < 3 or len(tokens) % 2 == 0:
         return None, "Error: invalid arithmetic expression"
 
@@ -91,15 +91,33 @@ def evaluate_chain(
         if tokens[i] not in ops:
             return None, "Error: invalid arithmetic expression"
 
-    current, error = parse_token(tokens[0], variables, require_defined=True)
-    if error:
-        return None, error
-    for i in range(1, len(tokens), 2):
-        op = tokens[i]
-        right_val, error = parse_token(tokens[i + 1], variables, require_defined=True)
+    values = []
+    ops_list = []
+    for i in range(0, len(tokens), 2):
+        value, error = parse_token(tokens[i], variables, require_defined=True)
         if error:
             return None, error
-        current, error = apply_arithmetic(current, op, right_val)
+        values.append(value)
+        if i + 1 < len(tokens):
+            ops_list.append(tokens[i + 1])
+
+    high_ops = {"*", "/", "%"}
+    idx = 0
+    while idx < len(ops_list):
+        op = ops_list[idx]
+        if op in high_ops:
+            result, error = apply_arithmetic(values[idx], op, values[idx + 1])
+            if error:
+                return None, error
+            values[idx] = result
+            del values[idx + 1]
+            del ops_list[idx]
+            continue
+        idx += 1
+
+    current = values[0]
+    for i, op in enumerate(ops_list):
+        current, error = apply_arithmetic(current, op, values[i + 1])
         if error:
             return None, error
 
