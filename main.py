@@ -145,7 +145,7 @@ while True:
 
     if split_command[0] == "EXIT!":  # exit
         print("Interpreter is now terminated...")
-        exit()
+        break
 
     if split_command[0] == "BEG":  # input variable on cli
         if len(split_command) < 2 or not split_command[1]:
